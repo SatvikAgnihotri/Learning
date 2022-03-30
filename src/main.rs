@@ -1,5 +1,5 @@
-/*! Given a directory, read all the files, and find anything that looks like a url. Test the url, and see if its error 404. 
-Then return a file with all non-valid urls. 
+/*! Given a directory, read all the files, and find anything that looks like a url. Test the url, and see if its error 404.
+Then return a file with all non-valid urls.
 
 Basic Outline
 1. For file in folder
@@ -16,59 +16,71 @@ Basic Outline
 // :: is a path seperator. std is crate. Fs is module.
 
 use std::fs;
-use std::process::Command;
-use std::env;
+extern crate reqwest;
+
+enum StatusCode {
+    Notfound,
+    Found,
+}
+
+impl StatusCode {
+    fn to_code(&self) -> i32 {
+        match self {
+            NotFound => 404,
+            Found => 200,
+        }
+    }
+}
 
 fn main() {
-
     //Identify Filename
     let filename = "info.txt";
     println!("In file {}...", filename);
 
     //Read file to string
-    let file_as_string = fs::read_to_string(filename)
-        .expect("Something went wrong reading the file");
-    
+    let file_as_string =
+        fs::read_to_string(filename).expect("Something went wrong reading the file");
+
     //Boolean test for URLs
     let url_indicator = "https:";
-    println!("Does the file contain a URL? {}", file_as_string.contains(url_indicator)); 
+    println!(
+        "Does the file contain a URL? {}",
+        file_as_string.contains(url_indicator)
+    );
 
-    //Establish features to talk to Console
-    let mut cmd = Command::new("ping");
+    //let _failed = StatusCode::NotFound(i32::from(404));
+    //let _unregistered = StatusCode::Found(i32::from(302));
 
     //Split string into lines based on whitespace
     for word in file_as_string.split_whitespace() {
-        //Test for url_indicator 
-        if word.contains(url_indicator){
-            cmd.arg(word);
-            match cmd.output() {
-                Ok(o) => {
-                    let args: Vec<String> = env::args().collect();
-                    println!("{:?}", args);
-                    // let url_output = fs::read_to_string(o)
-                    //     .expect("Something went wrong reading the file");
-                    // if url_output.contains("bytes"){
-                    //     println!(" {} works!", word);
-                    // } else {
-                    //    println!("{} is broken with error: {}", word, o);
-                    //}   
-                },
-                    Err(e) => {
-                        println!("Something went wrong: ");pin
+        // let a = reqwest::blocking::get(word).unwrap().text().unwrap();
+        // let a = reqwest::blocking::get(word).unwrap().status().is_success();
+        //Test for url_indicator
+        if word.contains(url_indicator) {
+            fn code_as_i32(code: Statuscode) -> i32 {
+                match code {
+                    StatusCode::NotFound => 404,
+                    StatusCode::Found => 302,
                 }
             }
+            // let success = match reqwest::blocking::get(word){
+            //     Ok(resp) => resp.status().is_success(),
+            //     Err(err) => false
+            // };
+            // if! success {
+            //     println!("{} with code", word);
+            // }
         }
     }
 }
-
+//cargo check
 /* Snippits of Code that may be useful:
 
-    if file_as_string.contains(url_indicator) {
-        do_something();
-    }
+if file_as_string.contains(url_indicator) {
+    do_something();
+}
 
-    file_as_string.push_str("This is how you append to a string!");
+file_as_string.push_str("This is how you append to a string!");
 
-    for url_indicator in file_as_string.chars(){
-        println!("Number: {}", url_indicator);} */
-
+for url_indicator in file_as_string.chars(){
+    println!("Number: {}", url_indicator);} */
