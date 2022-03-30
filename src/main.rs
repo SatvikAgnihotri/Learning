@@ -18,18 +18,11 @@ Basic Outline
 use std::fs;
 extern crate reqwest;
 
-enum StatusCode {
-    Notfound,
-    Found,
-}
-
-impl StatusCode {
-    fn to_code(&self) -> i32 {
-        match self {
-            NotFound => 404,
-            Found => 200,
-        }
-    }
+#[derive(Debug)]
+enum WebsiteOutcome {
+    Ok,
+    HttpError(reqwest::StatusCode),
+    NetworkError(reqwest::Error),
 }
 
 fn main() {
@@ -48,39 +41,26 @@ fn main() {
         file_as_string.contains(url_indicator)
     );
 
-    //let _failed = StatusCode::NotFound(i32::from(404));
-    //let _unregistered = StatusCode::Found(i32::from(302));
-
     //Split string into lines based on whitespace
     for word in file_as_string.split_whitespace() {
-        // let a = reqwest::blocking::get(word).unwrap().text().unwrap();
-        // let a = reqwest::blocking::get(word).unwrap().status().is_success();
         //Test for url_indicator
         if word.contains(url_indicator) {
-            fn code_as_i32(code: Statuscode) -> i32 {
-                match code {
-                    StatusCode::NotFound => 404,
-                    StatusCode::Found => 302,
+            let outcome = match reqwest::blocking::get(word) {
+                Ok(resp) => {
+                    if resp.status().is_success() {
+                        WebsiteOutcome::Ok
+                    } else {
+                        WebsiteOutcome::HttpError(resp.status())
+                    }
                 }
+                Err(err) => WebsiteOutcome::NetworkError(err),
+            };
+
+            match outcome {
+                WebsiteOutcome::Ok => {}
+                WebsiteOutcome::HttpError(status) => eprintln!("Server responded with: {}", status),
+                WebsiteOutcome::NetworkError(err) => eprintln!("Failed to connect: {}", err),
             }
-            // let success = match reqwest::blocking::get(word){
-            //     Ok(resp) => resp.status().is_success(),
-            //     Err(err) => false
-            // };
-            // if! success {
-            //     println!("{} with code", word);
-            // }
         }
     }
 }
-//cargo check
-/* Snippits of Code that may be useful:
-
-if file_as_string.contains(url_indicator) {
-    do_something();
-}
-
-file_as_string.push_str("This is how you append to a string!");
-
-for url_indicator in file_as_string.chars(){
-    println!("Number: {}", url_indicator);} */
