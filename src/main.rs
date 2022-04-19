@@ -13,9 +13,12 @@ Basic Outline
 8. Repeat for all files in the folder.
 */
 
-// :: is a path seperator. std is crate. Fs is module.
+use std::thread::current;
+use std::{fs, string};
+use std::env;
 
-use std::fs;
+use reqwest::header::Entry;
+
 extern crate reqwest;
 
 #[derive(Debug)]
@@ -26,13 +29,36 @@ enum WebsiteOutcome {
 }
 
 fn main() {
-    //Identify Filename
-    let filename = "info.txt";
-    println!("In file {}...", filename);
 
+    //Identify Filename
+    //let path = std::env::current_dir().unwrap();
+    //println!("{:?}", path);
+
+    fn read_file_string(filepath: &str) -> Result<String, Box<dyn std::error::Error>> {
+        let data = fs::read_to_string(filepath)?;
+        Ok(data)
+    }
+
+    let paths = vec![];
+
+    for entry in fs::read_dir("./").unwrap() {
+        let entry = entry.unwrap().path();
+        paths.push(entry);
+    }
+
+    // for Entry in fs::read_dir(current_dir).unwrap() {
+    //     let filepath = read_file_string(entry).unwrap();
+    //     //let filename = entry.to_string().display();
+    //     let mut filepath = String::from("{}", entry);
+    //     let file_as_string =
+    //         fs::read_to_string(filepath).expect("Something went wrong converting the file");
+    //     println!("{}", file_as_string);
+    // }
+//
+    let filename="info.txt";
     //Read file to string
     let file_as_string =
-        fs::read_to_string(filename).expect("Something went wrong reading the file");
+        fs::read_to_string(filepath).expect("Something went wrong converting the file");
 
     //Boolean test for URLs
     let url_indicator = "https:";
@@ -64,3 +90,17 @@ fn main() {
         }
     }
 }
+
+
+// fn factorial(n: u64) -> u64 {
+//     let mut result = 1;
+//     for i in 1..n {
+//         result *= i;
+//     }
+//     result
+// }
+
+// fn factorial2(n: u64) -> u64 {
+//     if n == 1 { return 1 }
+//     n * factorial2(n-1)
+// }
