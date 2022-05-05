@@ -1,7 +1,8 @@
 use std::collections::HashMap;
-use std::env;
-use std::thread::current;
+use std::{env, path, io};
+use std::path::{Path, PathBuf};
 use std::{fs, string};
+use walkdir::WalkDir;
 
 extern crate regex;
 use regex::Regex;
@@ -20,12 +21,15 @@ fn main() {
     let mut paths = vec![];
     let mut contents = vec![];
     let mut urls = vec![];
-
     let re = Regex::new(r#"https?://(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)"#).unwrap();
 
-    for entry in fs::read_dir("./").unwrap() {
-        let entry = entry.unwrap().path();
-        paths.push(entry);
+    //Attempting to collect to use as root
+    //let home = fs::read_dir("./").unwrap();
+    //println!("{:?}", home);
+
+    for entry in WalkDir::new(".").into_iter().filter_map(|file| file.ok()) {
+        let a = entry.path().display().to_string();
+        paths.push(a);
     }
 
     for entry in paths {
@@ -36,7 +40,7 @@ fn main() {
     }
 
     for entry in contents {
-        let words = entry.split_whitespace();
+        let _words = entry.split_whitespace();
         for cap in re.captures_iter(&entry) {
             let a = cap[0].to_string(); //println!("{:?}", &cap[0]);
             urls.push(a);
@@ -69,3 +73,9 @@ fn main() {
         }
     }
 }
+
+
+    // for entry in fs::read_dir("./").unwrap() {
+    //     let entry = entry.unwrap().path();
+    //     paths.push(file.path());
+    // }
